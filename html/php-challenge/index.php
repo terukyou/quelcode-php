@@ -9,6 +9,12 @@ if (isset($_SESSION['id']) && $_SESSION['time'] + 3600 > time()) {
 	$members = $db->prepare('SELECT * FROM members WHERE id=?');
 	$members->execute(array($_SESSION['id']));
 	$member = $members->fetch();
+	// ログインしてるアカウントがいいねしたツイートを探す
+	$likes=$db->prepare('SELECT post_fav.post_id FROM post_fav WHERE user_id=?');
+	$likes->execute(array($_SESSION['id']));
+	while($like=$likes->fetch()){
+		$my_like[]=$like;
+	};
 } else {
 	// ログインしていない
 	header('Location: login.php'); exit();
@@ -55,6 +61,32 @@ if (isset($_REQUEST['res'])) {
 
 	$table = $response->fetch();
 	$message = '@' . $table['name'] . ' ' . $table['message'];
+}
+
+// ❤を押した場合
+if(isset($_REQUEST['like'])){
+	// その投稿にいいねしてたかどうか
+	$pressed = $db->prepare('SELECT COUNT(*) AS cnt FROM post_fav WHERE post_id=? AND user_id=?');
+    $pressed->execute(array(
+      $_REQUEST['like'],
+      $_SESSION['id']
+	));
+	$my_like_cnt = $pressed->fetch();
+	// いいねしていない場合
+	if($my_like_cnt['cnt']<1){
+		$push=$db->prepare('INSERT INTO post_fav SET post_id=?,user_id=?');
+		$push->execute(array($_REQUEST['like'],$_SESSION['id']));
+
+		header('Location: index.php');
+		exit;
+	}else{
+	// いいねしていた場合
+		$cancel=$db->prepare('DELETE FROM post_fav WHERE post_id=? AND user_id=?');
+		$cancel->execute(array($_REQUEST['like'],$_SESSION['id']));
+
+		header('Location: index.php');
+		exit;
+	}
 }
 
 // htmlspecialcharsのショートカット
@@ -125,11 +157,25 @@ style="color: #F33;">削除</a>]
 endif;
 ?>
     </p>
-    </div>
+	</div>
+	<?php 
+	$my_like_cnt=0;
+	if(!empty($my_like)){
+		foreach($my_like as $like_post){
+			if($like_post['post_id']===$post['id']){
+				$my_like_cnt=1;
+			}
+		}
+	}
+	?>
+	<?php if($my_like_cnt<1):?>
+	<a style="color: gray;" href="index.php?like=<?php echo h($post['id']); ?>">♥</a>
+	<?php else: ?>
+	<a style="color: red;" href="index.php?like=<?php echo h($post['id']); ?>">♥</a>
+	<?php endif; ?>
 <?php
 endforeach;
 ?>
-
 <ul class="paging">
 <?php
 if ($page > 1) {
