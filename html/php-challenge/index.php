@@ -44,7 +44,10 @@ if (!empty($_POST)) {
 }
 
 // 投稿を取得する
-$page = $_REQUEST['page'];
+if(isset($_REQUEST['page'])){
+	$page = $_REQUEST['page'];
+}
+$page=0;
 if ($page == '') {
 	$page = 1;
 }
@@ -234,7 +237,7 @@ function makeLink($value)
 				<dl>
 					<dt><?php echo h($member['name']); ?>さん、メッセージをどうぞ</dt>
 					<dd>
-						<textarea name="message" cols="50" rows="5"><?php echo h($message); ?></textarea>
+						<textarea name="message" cols="50" rows="5"><?php if (!empty($_POST)){echo h($message);} ?></textarea>
 						<input type="hidden" name="reply_post_id" value="<?php echo h($_REQUEST['res']); ?>" />
 						<input type="hidden" name="retweet_id" value="<?php echo h($_REQUEST['rt']); ?>">
 					</dd>
@@ -297,9 +300,11 @@ function makeLink($value)
 						<?php else : ?>
 							<a style="color: #00e676;" href="index.php?rt=<?php echo h($post['id']); ?>">RT</a>
 						<?php endif;
-						foreach ($dup_rt as $rt) {
-							if ($rt['rt_post_id'] === $post['rt_post_id'] || $rt['rt_post_id'] === $post['id']) {
-								echo h($rt['rt_cnt']);
+						if(!empty($dup_rt)){
+							foreach ($dup_rt as $rt) {
+								if ($rt['rt_post_id'] === $post['rt_post_id'] || $rt['rt_post_id'] === $post['id']) {
+									echo h($rt['rt_cnt']);
+								}
 							}
 						}
 						?>
@@ -308,9 +313,11 @@ function makeLink($value)
 						<?php else : ?>
 							<a style="color: red;" href="index.php?like=<?php echo h($post['id']); ?>">♥</a>
 						<?php endif;
-						foreach ($dup_like as $like) {
-							if ($like['post_id'] === $post['id'] || $like['post_id'] === $post['rt_post_id']) {
-								echo h($like['like_cnt']);
+						if(!empty($dup_like)){
+							foreach ($dup_like as $like) {
+								if ($like['post_id'] === $post['id'] || $like['post_id'] === $post['rt_post_id']) {
+									echo h($like['like_cnt']);
+								}
 							}
 						}
 						?>
