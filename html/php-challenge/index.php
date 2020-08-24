@@ -2,6 +2,10 @@
 session_start();
 require('dbconnect.php');
 
+function redirect(){
+    header('Location: index.php');
+    exit();
+}
 if (isset($_SESSION['id']) && $_SESSION['time'] + 3600 > time()) {
 	// ログインしている
 	$_SESSION['time'] = time();
@@ -38,16 +42,15 @@ if (!empty($_POST)) {
 			$_POST['reply_post_id']
 		));
 
-		header('Location: index.php');
-		exit();
+		redirect();
 	}
 }
 
 // 投稿を取得する
+$page=0;
 if(isset($_REQUEST['page'])){
 	$page = $_REQUEST['page'];
 }
-$page=0;
 if ($page == '') {
 	$page = 1;
 }
@@ -114,8 +117,7 @@ if (isset($_REQUEST['rt'])) {
 				$_REQUEST['rt'],
 				$_SESSION['id']
 			));
-			header('Location: index.php');
-			exit();
+			redirect();
 		} else {
 			// RTされたものをRTした場合
 			$rt_push->execute(array(
@@ -124,8 +126,7 @@ if (isset($_REQUEST['rt'])) {
 				$rt_infomation['rt_post_id'],
 				$_SESSION['id']
 			));
-			header('Location: index.php');
-			exit();
+			redirect();
 		}
 	} else {
 		// RTしていた場合
@@ -134,15 +135,13 @@ if (isset($_REQUEST['rt'])) {
 			$rt_cancel = $db->prepare('DELETE FROM posts WHERE rt_post_id=? AND rt_user_id=?');
 			$rt_cancel->execute(array($_REQUEST['rt'], $_SESSION['id']));
 
-			header('Location: index.php');
-			exit;
+			redirect();
 		} else {
 			// RTされたツイートである場合そのデータを削除
 			$rt_cancel = $db->prepare('DELETE FROM posts WHERE rt_post_id=? AND rt_user_id=?');
 			$rt_cancel->execute(array($my_rt_cnt['rt_post_id'], $_SESSION['id']));
 
-			header('Location: index.php?');
-			exit;
+			redirect();
 		}
 	}
 }
@@ -177,13 +176,11 @@ if (isset($_REQUEST['like'])) {
 		if ((int)$rt_post_id['rt_post_id'] === 0) {
 			// オリジナルの場合
 			$fav_push->execute(array($_REQUEST['like'], $_SESSION['id']));
-			header('Location: index.php');
-			exit;
+			redirect();
 		} else {
 			// RTされたツイートの場合
 			$fav_push->execute(array($rt_post_id['rt_post_id'], $_SESSION['id']));
-			header('Location: index.php');
-			exit;
+			redirect();
 		}
 	} else {
 		// いいねしていた場合
@@ -191,13 +188,11 @@ if (isset($_REQUEST['like'])) {
 		if ((int)$rt_post_id['rt_post_id'] === 0) {
 			// オリジナルの場合
 			$fav_cancel->execute(array($_REQUEST['like'], $_SESSION['id']));
-			header('Location: index.php');
-			exit;
+			redirect();
 		} else {
 			// RTされたツイートの場合
 			$fav_cancel->execute(array($rt_post_id['rt_post_id'], $_SESSION['id']));
-			header('Location: index.php');
-			exit;
+			redirect();
 		}
 	}
 }
