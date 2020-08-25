@@ -75,8 +75,13 @@ $dup_likes = $db->query('SELECT post_id,COUNT(post_id) AS like_cnt FROM post_fav
 while ($like = $dup_likes->fetch()) {
     $dup_like[] = $like;
 };
+// RTした人の取得(RTした人の名前、RTされたメッセージのid、RTされた時間)
+$rt_members = $db->query('SELECT members.name as rt_name,rt_post_id,posts.created FROM posts,members WHERE members.id=posts.rt_user_id');
+while($rt_member = $rt_members->fetch()){
+    $rt_mem[] = $rt_member;
+}
 // RTの数の取得
-$dup_rts = $db->query('SELECT members.name as rt_name,rt_post_id,COUNT(rt_post_id) AS rt_cnt FROM posts,members WHERE members.id=posts.rt_user_id GROUP BY rt_post_id HAVING COUNT(rt_post_id) AND rt_post_id>0');
+$dup_rts = $db->query('SELECT rt_post_id,COUNT(rt_post_id) AS rt_cnt,posts.created FROM posts,members WHERE members.id=posts.rt_user_id GROUP BY rt_post_id HAVING COUNT(rt_post_id) AND rt_post_id>0');
 while ($rts = $dup_rts->fetch()) {
     $dup_rt[] = $rts;
 }
@@ -254,7 +259,12 @@ function makeLink($value)
                         if ((int)$post['rt_post_id'] !== 0) {
                             foreach ($dup_rt as $rt) {
                                 if ($rt['rt_post_id'] === $post['rt_post_id'] || $rt['rt_post_id'] === $post['id']) {
-                                    echo h($rt['rt_name']) . 'さんがRTしました';
+                                    foreach($rt_mem as $rt_m){
+                                        // RTされた時間と投稿時間が一致したメッセージを指定
+                                        if($rt_m['created'] === $post['created'] && $rt_m['id'] === $rt['rt_user_id']){
+                                            echo (h($rt_m['rt_name']) . 'さんがRTしました');
+                                        }
+                                    }
                                 }
                             }
                         };
