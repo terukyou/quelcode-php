@@ -257,12 +257,7 @@ function makeLink($value)
                             $rt_member = $db->prepare('SELECT members.name as rt_name FROM members WHERE id=?');
                             $rt_member->execute(array($post['rt_user_id']));
                             $rt_mem = $rt_member->fetch();
-
-                            foreach ($dup_rt as $rt) {
-                                if ($rt['rt_post_id'] === $post['rt_post_id'] || $rt['rt_post_id'] === $post['id']) {
                                     print($rt_mem['rt_name'].'さんがRTしました');
-                                    }
-                                }
                             };
                         ?>
                     </p>
