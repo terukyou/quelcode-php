@@ -75,11 +75,7 @@ $dup_likes = $db->query('SELECT post_id,COUNT(post_id) AS like_cnt FROM post_fav
 while ($like = $dup_likes->fetch()) {
     $dup_like[] = $like;
 };
-// RTした人の取得(RTした人の名前、RTされたメッセージのid、RTされた時間)
-$rt_members = $db->query('SELECT members.name as rt_name,rt_post_id,posts.id FROM posts,members WHERE members.id=posts.rt_user_id');
-while($rt_member = $rt_members->fetch()){
-    $rt_mem[] = $rt_member;
-}
+
 // RTの数の取得
 $dup_rts = $db->query('SELECT rt_post_id,COUNT(rt_post_id) AS rt_cnt,posts.created FROM posts,members WHERE members.id=posts.rt_user_id GROUP BY rt_post_id HAVING COUNT(rt_post_id) AND rt_post_id>0');
 while ($rts = $dup_rts->fetch()) {
@@ -256,16 +252,15 @@ function makeLink($value)
                 <div class="msg">
                     <p class="day">
                         <?php
-                        foreach($rt_mem as $rt_m){
-                            // RTされたidとメッセージのidが一致
-                            if($rt_m['id'] === $post['id']){
-                                $message = $rt_m['rt_name'];
-                            }
-                        }
                         if ((int)$post['rt_post_id'] !== 0) {
+                            // メッセージの'rt_user_id'からRTした人の名前検索
+                            $rt_member = $db->prepare('SELECT members.name as rt_name FROM members WHERE id=?');
+                            $rt_member->execute(array($post['rt_user_id']));
+                            $rt_mem = $rt_member->fetch();
+
                             foreach ($dup_rt as $rt) {
                                 if ($rt['rt_post_id'] === $post['rt_post_id'] || $rt['rt_post_id'] === $post['id']) {
-                                    print($message.'さんがRTしました');
+                                    print($rt_mem['rt_name'].'さんがRTしました');
                                     }
                                 }
                             };
