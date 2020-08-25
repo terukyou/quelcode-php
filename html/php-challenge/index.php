@@ -76,7 +76,7 @@ while ($like = $dup_likes->fetch()) {
     $dup_like[] = $like;
 };
 // RTした人の取得(RTした人の名前、RTされたメッセージのid、RTされた時間)
-$rt_members = $db->query('SELECT members.name as rt_name,rt_post_id,posts.created FROM posts,members WHERE members.id=posts.rt_user_id');
+$rt_members = $db->query('SELECT members.name as rt_name,rt_post_id,posts.id FROM posts,members WHERE members.id=posts.rt_user_id');
 while($rt_member = $rt_members->fetch()){
     $rt_mem[] = $rt_member;
 }
@@ -256,18 +256,19 @@ function makeLink($value)
                 <div class="msg">
                     <p class="day">
                         <?php
+                        foreach($rt_mem as $rt_m){
+                            // RTされたidとメッセージのidが一致
+                            if($rt_m['id'] === $post['id']){
+                                $message = $rt_m['rt_name'];
+                            }
+                        }
                         if ((int)$post['rt_post_id'] !== 0) {
                             foreach ($dup_rt as $rt) {
                                 if ($rt['rt_post_id'] === $post['rt_post_id'] || $rt['rt_post_id'] === $post['id']) {
-                                    foreach($rt_mem as $rt_m){
-                                        // RTされた時間と投稿時間が一致したメッセージを指定
-                                        if($rt_m['created'] === $post['created'] && $rt_m['id'] === $rt['rt_user_id']){
-                                            echo (h($rt_m['rt_name']) . 'さんがRTしました');
-                                        }
+                                    print($message.'さんがRTしました');
                                     }
                                 }
-                            }
-                        };
+                            };
                         ?>
                     </p>
                     <img src="member_picture/<?php echo h($post['picture']); ?>" width="48" height="48" alt="<?php echo h($post['name']); ?>" />
